@@ -56,7 +56,58 @@ exports.getOneSauce = (req, res, next) => {
         });
 }
 
-exports.likeSauce = (req, res, next) => {}
+exports.likeSauce = (req, res, next) => {
+    Sauce.findOne({ _id: req.params.id })
+    .then((sauce) => {
+        let sauceLikes = sauce.likes;
+        let sauceDislikes = sauce.dislikes;
+        let sauceUsersLiked = sauce.usersLiked;
+        let sauceUsersDisliked = sauce.usersDisliked;
+        let user = req.body.userId;
+        let sauceUpdate = new Sauce({ _id: req.params.id });
+        if (req.body.like === 1) {
+            sauceLikes += 1;
+            sauceUpdate.likes = sauceLikes;
+            sauceUsersLiked.push(user);
+            sauceUpdate.usersLiked = sauceUsersLiked;
+        } else if (req.body.like === -1) {
+            sauceDislikes += 1;
+            sauceUpdate.dislikes = sauceDislikes;
+            sauceUsersDisliked.push(user);
+            sauceUpdate.usersDisliked = sauceUsersDisliked;
+        } else if (req.body.like === 0) {
+            let indexLikes = sauceUsersLiked.indexOf(user);
+            let indexDislikes = sauceUsersDisliked.indexOf(user);
+            if (indexLikes > -1) {
+                sauceUsersLiked.splice(indexLikes, 1);
+                sauceUpdate.usersLiked = sauceUsersLiked;
+                sauceLikes -= 1;
+                sauceUpdate.likes = sauceLikes;
+            } else if (indexDislikes > -1) {
+                sauceUsersDisliked.splice(indexDislikes, 1);
+                sauceUpdate.usersDisliked = sauceUsersDisliked;
+                sauceDislikes -= 1;
+                sauceUpdate.dislikes = sauceDislikes;
+        }
+        }
+        Sauce.updateOne({ _id: req.params.id }, sauceUpdate)
+            .then(() => {
+                res.status(201).json({
+                    message: 'Sauce updated successfully.'
+                });
+            })
+            .catch((error) => {
+                res.status(400).json({
+                    error: error
+                });
+            });
+        })
+    .catch((error) => {
+        res.status(400).json({
+            error: error
+        });
+    });
+}
 
 exports.modifySauce = (req, res, next) => {
     let sauce = new Sauce({ _id: req.params.id });
