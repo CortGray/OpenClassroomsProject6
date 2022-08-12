@@ -166,7 +166,7 @@ exports.deleteSauce = (req, res, next) => {
                     _id: req.params.id
                 })
                     .then(() => {
-                        req.status(200).json({
+                        res.status(200).json({
                             message: 'Deleted!'
                         });
                     }) .catch((error) => {
